@@ -13,4 +13,3 @@
     res.status(500).json({ error: e.message });
   }
 }
-Perubahan: ganti limit → page_size=50 karena Blockscout API pakai parameter page_size bukan limit.

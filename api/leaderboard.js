@@ -1,8 +1,9 @@
-export default async function handler(req, res) {
+  export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 's-maxage=30');
   try {
     const [addressRes, statsRes] = await Promise.all([
-      fetch('https://explorer.testnet.chain.robinhood.com/api/v2/addresses?sort=tx_count&order=desc')
+      fetch('https://explorer.testnet.chain.robinhood.com/api/v2/addresses?sort=tx_count&order=desc&page_size=50'),
       fetch('https://explorer.testnet.chain.robinhood.com/api/v2/stats')
     ]);
     const addresses = await addressRes.json();
@@ -12,3 +13,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: e.message });
   }
 }
+Perubahan: ganti limit → page_size=50 karena Blockscout API pakai parameter page_size bukan limit.

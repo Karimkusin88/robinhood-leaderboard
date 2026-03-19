@@ -204,14 +204,17 @@ async function connectWallet(){
   try{
     provider=new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts",[]);
-    try{
-      await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0xB656"}]});
-    }catch(e){
-      if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0xB656",chainName:"Robinhood Chain Testnet",nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:[RPC_URL],blockExplorerUrls:[EXPLORER_URL]}]});
-    }
     signer=await provider.getSigner();
+    const network=await provider.getNetwork();
+    if(Number(network.chainId)!==46630){
+      setStatus("⚠️ Switch ke Robinhood Chain Testnet di MetaMask dulu!","err");
+      return false;
+    }
     return true;
-  }catch(err){setStatus("Wallet connection failed: "+err.message,"err");return false}
+  }catch(err){
+    setStatus("Error: "+err.message,"err");
+    return false;
+  }
 }
 async function registerBuilder(){
   const name=document.getElementById("nameInput").value.trim();

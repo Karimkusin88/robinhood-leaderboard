@@ -146,7 +146,7 @@ async function loadLeaderboard(){
   btn.classList.add("loading");
   try{
     const[addressRes,statsRes]=await Promise.all([
-      fetch(`${EXPLORER_API}https://corsproxy.io/?https://explorer.testnet.chain.robinhood.com/api/v2/addresses?sort=tx_count&order=desc&limit=50
+      fetch(`${EXPLORER_API}https://api.allorigins.win/raw?url=https://explorer.testnet.chain.robinhood.com/api/v2/stats/addresses?sort=tx_count&order=desc&limit=50
       fetch(`${EXPLORER_API}/stats`).then(r=>r.json()).catch(()=>null)
     ]);
     if(statsRes)document.getElementById("statBlock").textContent=Number(statsRes.total_blocks||0).toLocaleString();

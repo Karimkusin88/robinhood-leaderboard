@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robinhood Chain — Builder Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{--green:#00ff88;--green-dim:#00cc6a;--green-dark:#003322;--bg:#030d07;--bg2:#050f09;--card:#071a0e;--border:#0a2e18;--text:#a0ffcc;--text-dim:#4a8a6a;--gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;--red:#ff4466}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.015) 2px,rgba(0,255,136,.015) 4px);pointer-events:none;z-index:999}
+    body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,255,136,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+    .container{max-width:1100px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+    header{padding:48px 0 32px;text-align:center}
+    .header-tag{font-size:11px;letter-spacing:4px;color:var(--green-dim);text-transform:uppercase;margin-bottom:12px}
+    h1{font-family:'Orbitron',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:900;color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.5),0 0 60px rgba(0,255,136,.2);letter-spacing:2px;line-height:1.1}
+    .subtitle{margin-top:10px;color:var(--text-dim);font-size:13px;letter-spacing:2px}
+    .cursor{display:inline-block;width:10px;height:18px;background:var(--green);margin-left:4px;vertical-align:middle;animation:blink 1s step-end infinite}
+    @keyframes blink{50%{opacity:0}}
+    .stats-bar{display:flex;gap:16px;margin:28px 0;flex-wrap:wrap}
+    .stat-card{flex:1;min-width:140px;background:var(--card);border:1px solid var(--border);border-top:2px solid var(--green-dim);padding:16px 20px;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(0,255,136,.04) 0%,transparent 60%)}
+    .stat-label{font-size:10px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px}
+    .stat-value{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--green);text-shadow:0 0 10px rgba(0,255,136,.4)}
+    .controls{display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap}
+    .tab-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;padding:8px 20px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+    .tab-btn:hover,.tab-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.05);box-shadow:0 0 10px rgba(0,255,136,.1)}
+    .refresh-btn{margin-left:auto;background:transparent;border:1px solid var(--green-dim);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:12px;padding:8px 16px;cursor:pointer;letter-spacing:1px;transition:all .2s;display:flex;align-items:center;gap:6px}
+    .refresh-btn:hover{background:rgba(0,255,136,.1);box-shadow:0 0 15px rgba(0,255,136,.2)}
+    .refresh-btn.loading .spin{animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .table-wrap{border:1px solid var(--border);border-top:2px solid var(--green);overflow:hidden}
+    .table-header{display:grid;grid-template-columns:60px 1fr 120px 130px 100px 110px;padding:12px 20px;background:rgba(0,255,136,.05);border-bottom:1px solid var(--border);font-size:10px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase}
+    .builder-row{display:grid;grid-template-columns:60px 1fr 120px 130px 100px 110px;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center;transition:background .2s;animation:fadeIn .3s ease forwards;opacity:0}
+    .builder-row:hover{background:rgba(0,255,136,.04)}
+    .builder-row:last-child{border-bottom:none}
+    @keyframes fadeIn{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(8px)}}
+    .rank{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;text-align:center}
+    .rank.r1{color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.5)}
+    .rank.r2{color:var(--silver)}
+    .rank.r3{color:var(--bronze)}
+    .rank.other{color:var(--text-dim);font-size:12px}
+    .addr-cell{display:flex;flex-direction:column;gap:2px}
+    .addr-name{font-size:14px;color:var(--text)}
+    .addr-hash{font-size:11px;color:var(--text-dim)}
+    .addr-hash a{color:inherit;text-decoration:none;transition:color .2s}
+    .addr-hash a:hover{color:var(--green)}
+    .num{font-size:13px;color:var(--text);text-align:right}
+    .num.highlight{color:var(--green);font-weight:bold}
+    .points-cell{text-align:right}
+    .points-val{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--green);text-shadow:0 0 8px rgba(0,255,136,.3)}
+    .balance-cell{text-align:right;font-size:12px;color:var(--text-dim)}
+    .builder-row.top1{border-left:3px solid var(--gold)}
+    .builder-row.top2{border-left:3px solid var(--silver)}
+    .builder-row.top3{border-left:3px solid var(--bronze)}
+    .loading-state,.empty-state{padding:60px 20px;text-align:center;color:var(--text-dim)}
+    .loading-dots span{display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;margin:0 3px;animation:dot 1.2s ease-in-out infinite}
+    .loading-dots span:nth-child(2){animation-delay:.2s}
+    .loading-dots span:nth-child(3){animation-delay:.4s}
+    @keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+    .register-panel{margin-top:24px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--green);padding:24px}
+    .panel-title{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:2px;color:var(--green);margin-bottom:16px;text-transform:uppercase}
+    .input-row{display:flex;gap:12px;flex-wrap:wrap}
+    .reg-input{flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 14px;outline:none;transition:border-color .2s}
+    .reg-input:focus{border-color:var(--green-dim)}
+    .reg-input::placeholder{color:var(--text-dim)}
+    .reg-btn{background:var(--green-dark);border:1px solid var(--green);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;padding:10px 24px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+    .reg-btn:hover{background:rgba(0,255,136,.15);box-shadow:0 0 20px rgba(0,255,136,.2)}
+    .reg-btn:disabled{opacity:.4;cursor:not-allowed}
+    footer{padding:32px 0 20px;text-align:center;color:var(--text-dim);font-size:11px;letter-spacing:1px}
+    footer a{color:var(--green-dim);text-decoration:none}
+    footer a:hover{color:var(--green)}
+    .status-msg{margin-top:10px;font-size:12px;min-height:18px}
+    .status-msg.ok{color:var(--green)}
+    .status-msg.err{color:var(--red)}
+    .live-dot{display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(0,255,136,0)}}
+    @media(max-width:700px){.table-header,.builder-row{grid-template-columns:40px 1fr 90px 90px}.table-header>*:nth-child(4),.table-header>*:nth-child(5),.builder-row>*:nth-child(4),.builder-row>*:nth-child(5){display:none}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-tag">// Robinhood Chain Testnet</div>
+    <h1>BUILDER LEADERBOARD<span class="cursor"></span></h1>
+    <p class="subtitle"><span class="live-dot"></span>Live on-chain rankings — top builders by activity</p>
+  </header>
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label">Total Builders</div><div class="stat-value" id="statBuilders">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total TXs (Top 50)</div><div class="stat-value" id="statTxs">—</div></div>
+    <div class="stat-card"><div class="stat-label">Latest Block</div><div class="stat-value" id="statBlock">—</div></div>
+    <div class="stat-card"><div class="stat-label">Last Updated</div><div class="stat-value" id="statTime" style="font-size:14px">—</div></div>
+  </div>
+  <div class="controls">
+    <button class="tab-btn active" onclick="setSort('txs',this)">BY TXS</button>
+    <button class="tab-btn" onclick="setSort('balance',this)">BY BALANCE</button>
+    <button class="tab-btn" onclick="setSort('contracts',this)">BY CONTRACTS</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadLeaderboard()">
+      <span class="spin" id="spinIcon">↻</span> REFRESH
+    </button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-header">
+      <div>RANK</div><div>BUILDER</div>
+      <div style="text-align:right">TXS</div>
+      <div style="text-align:right">CONTRACTS</div>
+      <div style="text-align:right">BALANCE</div>
+      <div style="text-align:right">SCORE</div>
+    </div>
+    <div id="leaderboardBody">
+      <div class="loading-state">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p style="margin-top:12px;font-size:12px;letter-spacing:2px">FETCHING CHAIN DATA...</p>
+      </div>
+    </div>
+  </div>
+  <div class="register-panel">
+    <div class="panel-title">// Register as Builder</div>
+    <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px">Connect your wallet to appear on the leaderboard with your builder alias.</p>
+    <div class="input-row">
+      <input class="reg-input" id="nameInput" type="text" maxlength="32" placeholder="Enter your builder alias (e.g. karimkusin)" />
+      <button class="reg-btn" id="regBtn" onclick="registerBuilder()">REGISTER ON-CHAIN</button>
+    </div>
+    <div class="status-msg" id="regStatus"></div>
+  </div>
+  <footer>
+    <p>Built on <a href="https://testnet.chain.robinhood.com" target="_blank">Robinhood Chain Testnet</a>
+    &nbsp;·&nbsp; Built by <a href="https://github.com/Karimkusin88" target="_blank">@KarimKusin88</a>
+    &nbsp;·&nbsp; <a href="https://explorer.testnet.chain.robinhood.com" target="_blank">Explorer ↗</a></p>
+    <p style="margin-top:6px">Contract: <a href="https://explorer.testnet.chain.robinhood.com/address/0xD524226F02079d07a0d003830223add13879bc13" target="_blank">0xD524...bc13 ↗</a> · Chain ID: 46630</p>
+  </footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script>
+const RPC_URL="https://rpc.testnet.chain.robinhood.com";
+const CHAIN_ID=46630;
+const EXPLORER_API="https://explorer.testnet.chain.robinhood.com/api/v2";
+const EXPLORER_URL="https://explorer.testnet.chain.robinhood.com";
+const LEADERBOARD_CONTRACT="0xD524226F02079d07a0d003830223add13879bc13";
+const LEADERBOARD_ABI=["function register(string calldata _name) external","function checkIn() external"];
+let sortMode="txs",allBuilders=[],provider=null,signer=null;
+window.addEventListener("load",()=>{loadLeaderboard();setInterval(loadLeaderboard,60000)});
+async function loadLeaderboard(){
+  const btn=document.getElementById("refreshBtn");
+  btn.classList.add("loading");
+  try{
+    const res = await fetch('/api/leaderboard');
+    const data = await res.json();
+    const addressRes = data.addresses;
+    const statsRes = data.stats;
+
+    if(statsRes)document.getElementById("statBlock").textContent=Number(statsRes.total_blocks||0).toLocaleString();
+    document.getElementById("statTime").textContent=new Date().toLocaleTimeString();
+    if(!addressRes||!addressRes.items){showError("Failed to fetch data. Retrying...");return}
+    const items=addressRes.items||[];
+    document.getElementById("statBuilders").textContent=items.length;
+    allBuilders=items.map(item=>({
+      address:item.hash,
+      txCount:parseInt(item.tx_count||0),
+      balance:parseFloat(ethers.formatEther(item.coin_balance||"0")).toFixed(4),
+      balanceRaw:parseFloat(ethers.formatEther(item.coin_balance||"0")),
+      contracts:item.is_contract?1:0,
+      name:item.name||null,
+      score:parseInt(item.tx_count||0)*10+Math.floor(parseFloat(ethers.formatEther(item.coin_balance||"0"))*100)
+    }));
+    document.getElementById("statTxs").textContent=allBuilders.reduce((a,b)=>a+b.txCount,0).toLocaleString();
+    renderLeaderboard();
+  }catch(err){showError("Network error.")}
+  finally{btn.classList.remove("loading")}
+}
+function renderLeaderboard(){
+  const body=document.getElementById("leaderboardBody");
+  let sorted=[...allBuilders];
+  if(sortMode==="txs")sorted.sort((a,b)=>b.txCount-a.txCount);
+  else if(sortMode==="balance")sorted.sort((a,b)=>b.balanceRaw-a.balanceRaw);
+  else sorted.sort((a,b)=>b.contracts-a.contracts);
+  if(!sorted.length){body.innerHTML='<div class="empty-state"><p>NO DATA FOUND</p></div>';return}
+  body.innerHTML=sorted.map((b,i)=>{
+    const rank=i+1;
+    const rc=rank===1?"r1":rank===2?"r2":rank===3?"r3":"other";
+    const rowC=rank===1?"top1":rank===2?"top2":rank===3?"top3":"";
+    const icon=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`#${rank}`;
+    const short=`${b.address.slice(0,6)}...${b.address.slice(-4)}`;
+    return`<div class="builder-row ${rowC}" style="animation-delay:${i*30}ms">
+      <div class="rank ${rc}">${icon}</div>
+      <div class="addr-cell">
+        <span class="addr-name">${b.name||"Anonymous Builder"}</span>
+        <span class="addr-hash"><a href="${EXPLORER_URL}/address/${b.address}" target="_blank">${short} ↗</a></span>
+      </div>
+      <div class="num ${sortMode==='txs'?'highlight':''}" style="text-align:right">${b.txCount.toLocaleString()}</div>
+      <div class="num" style="text-align:right">${b.contracts}</div>
+      <div class="balance-cell">${b.balance} ETH</div>
+      <div class="points-cell"><span class="points-val">${b.score.toLocaleString()}</span></div>
+    </div>`}).join("");
+}
+function setSort(mode,el){
+  sortMode=mode;
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  renderLeaderboard();
+}
+async function connectWallet(){
+  if(!window.ethereum){setStatus("MetaMask not found!","err");return false}
+  try{
+    provider=new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts",[]);
+    signer=await provider.getSigner();
+    const network=await provider.getNetwork();
+    if(Number(network.chainId)!==46630){
+      setStatus("⚠️ Switch ke Robinhood Chain Testnet di MetaMask dulu!","err");
+      return false;
+    }
+    return true;
+  }catch(err){
+    setStatus("Error: "+err.message,"err");
+    return false;
+  }
+}
+async function registerBuilder(){
+  const name=document.getElementById("nameInput").value.trim();
+  const btn=document.getElementById("regBtn");
+  if(!name){setStatus("Enter a builder alias first!","err");return}
+  const connected=await connectWallet();
+  if(!connected)return;
+  btn.disabled=true;
+  setStatus("Sending transaction...","ok");
+  try{
+    const contract=new ethers.Contract(LEADERBOARD_CONTRACT,LEADERBOARD_ABI,signer);
+    const tx=await contract.register(name);
+    setStatus(`TX sent: ${tx.hash.slice(0,16)}...`,"ok");
+    await tx.wait();
+    setStatus(`✅ Registered as "${name}"! Refresh to see your rank.`,"ok");
+    setTimeout(loadLeaderboard,3000);
+  }catch(err){
+    const msg=err?.reason||err?.message||"Transaction failed";
+    setStatus(msg.includes("Already registered")?"Already registered!":"Error: "+msg.slice(0,80),"err");
+  }finally{btn.disabled=false}
+}
+function setStatus(msg,type){const el=document.getElementById("regStatus");el.textContent=msg;el.className="status-msg "+(type||"")}
+function showError(msg){document.getElementById("leaderboardBody").innerHTML=`<div class="empty-state"><p style="color:var(--red);font-size:12px;letter-spacing:2px">${msg}</p></div>`}
+</script>
+</body>
+</html>
